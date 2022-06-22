@@ -21,17 +21,13 @@ public class Application {
 
 ```
 
-首先
-
-这里面有个代码
+点进run方法会发现创建了SpringApplication对象
 
 ```java
 new SpringApplication(primarySources).run(args);
 ```
 
-在这里创建了一个SpringApplication对象
-
-这是它的具体构造方法
+SpringApplication的构造方法
 
 ```java
 public SpringApplication(ResourceLoader resourceLoader, Class<?>... primarySources) {
@@ -39,18 +35,18 @@ public SpringApplication(ResourceLoader resourceLoader, Class<?>... primarySourc
 		this.resourceLoader = resourceLoader;
 		Assert.notNull(primarySources, "PrimarySources must not be null");
 	 	this.primarySources = new LinkedHashSet<>(Arrays.asList(primarySources));
-       //判断容器是什么类型的
+       //判断当前容器是什么类型的
        //NONE,SERVLET,REACTIVE; 分别对应以下几种
        //不是web程序也不是响应式web
        //基于 servlet 的web程序
        //响应式web程序
 		this.webApplicationType = WebApplicationType.deduceFromClasspath();
-       //加载了ApplicationContextInitializer类型的资源
        //这会在是org.springframework.boot:spring-boot和org.springframework.boot:spring-boot-autoconfigure
-       //项目资源下的spring.factories中的配置文件中
+       //项目依赖下的spring.factories中的资源文件中
+       //spring.factories资源文件中寻找key是ApplicationContextInitializer类所对应的资源类，并实例化
 		setInitializers((Collection) getSpringFactoriesInstances(
 				ApplicationContextInitializer.class));
-       //ApplicationListener创建对象
+       //spring.factories资源文件中寻找key是ApplicationListener类所对应的资源类，并实例化
 		setListeners((Collection) getSpringFactoriesInstances(ApplicationListener.class));
        //设置主类也就是当前main方法所属类
 		this.mainApplicationClass = deduceMainApplicationClass();
@@ -62,10 +58,10 @@ private <T> Collection<T> getSpringFactoriesInstances(Class<T> type,
                                                       Class<?>[] parameterTypes, Object... args) {
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     // Use names and ensure unique to protect against duplicates
-    //这里就是加载spring.factories中的配置文件中所对应的类
+    //这里就是加载spring.factories中的资源文件中所对应的类
     Set<String> names = new LinkedHashSet<>(
         SpringFactoriesLoader.loadFactoryNames(type, classLoader));
-    //将是属于type类的实例化
+    //实例化
     List<T> instances = createSpringFactoriesInstances(type, parameterTypes,
                                                        classLoader, args, names);
     AnnotationAwareOrderComparator.sort(instances);
@@ -73,15 +69,7 @@ private <T> Collection<T> getSpringFactoriesInstances(Class<T> type,
 }
 ```
 
-
-
-
-
-
-
-
-
-
+如上我们可以发现共有两个类型ApplicationContextInitializer和ApplicationListener已经在SpringApplication创建对象的时候就已经加载并创建其所对应的资源类的对象，并充当SpringApplication的属性
 
 - 值得关注的有`SpringApplication.run`以及注解`@SpringBootApplication`
 
